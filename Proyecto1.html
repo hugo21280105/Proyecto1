@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="es">
+    <meta charset="UTF-8">
+    <head>
+        <title>Juego de atrapar</title>
+        <style>
+            body {
+                text-align: center;
+                background-color: #222;
+                color: white;
+                font-family: sans-serif;
+            }
+
+            #gameArea {
+                position: relative;
+                width: 500px;
+                height: 400px;
+                background-color: #333;
+                margin: 20px auto;
+                border: 2px solid white;
+            }
+
+            #square {
+                position: absolute;
+                width: 50px;
+                height: 50px;
+                background-color: red;
+                display: none;
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Atrapa el cuadrado</h1>
+        <p>Haz click en el cuadrado rojo para ganar puntos</p>
+        <div id="gameArea">
+            <div id="square"></div>
+        </div>
+        <p>Puntuación: <span id="score">0</span></p> 
+        <script>
+            const square = document.getElementById('square');
+            const gameArea = document.getElementById('gameArea');
+            const scoreDisplay = document.getElementById('score');
+            let score = 0;
+
+            function randomPosition() {
+            const x = Math.random() * (gameArea.clientWidth - 50);
+            const y = Math.random() * (gameArea.clientHeight - 50);
+            square.style.left = x + 'px';
+            square.style.top = y + 'px';
+            }
+
+            function showSquare() {
+            square.style.display = 'block';
+            randomPosition();
+
+            setTimeout(() => {
+                square.style.display = 'none';
+                showSquare(); // vuelve a aparecer en otro sitio
+            }, 1000);
+            }
+
+            square.addEventListener('click', () => {
+            score++;
+            scoreDisplay.textContent = score;
+            square.style.display = 'none';
+            });
+
+            showSquare();
+        </script>           
+    </body>
+</html>
+
+        
