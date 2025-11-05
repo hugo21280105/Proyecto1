@@ -32,7 +32,7 @@
     </head>
     <body>
         <h1>Atrapa el cuadrado</h1>
-        <p>Haz click en el cuadrado rojo para ganar puntos</p>
+        <p>Haz click en el cuadrado rojo para ganar monedas</p>
         <div id="gameArea">
             <div id="square"></div>
         </div>
@@ -46,48 +46,80 @@
             scoreDisplay.style.marginTop = "10px";
             document.body.appendChild(scoreDisplay);
 
-            // --- Zona de mensajes ---
+           // --- Zona de mensajes ---
             const messageBox = document.createElement("div");
-            messageBox.style.marginTop = "10px";
-            messageBox.style.color = "yellow";
+            messageBox.style.marginTop = "20px";
+            messageBox.style.color = "white";
             messageBox.style.minHeight = "24px";
+            messageBox.style.maxWidth = "520px";
+            messageBox.style.margin = "20px auto 0";
+            messageBox.style.textAlign = "left";
+            messageBox.style.whiteSpace = "normal";
+            messageBox.style.lineHeight = "1.4";
+            messageBox.style.fontSize = "16px";
+
+            // --- NUEVO: estilo de recuadro ---
+            messageBox.style.backgroundColor = "rgba(0, 0, 0, 0.6)"; // fondo semitransparente
+            messageBox.style.border = "2px solid black";             // borde visible
+            messageBox.style.borderRadius = "10px";                  // esquinas redondeadas
+            messageBox.style.padding = "12px 16px";                  // margen interno
+            messageBox.style.boxShadow = "0 0 10px rgba(255, 255, 0, 0.3)"; // brillo suave
+            messageBox.style.display = "none";                       // oculto inicialmente
+            messageBox.style.opacity = "0";                          // para animación
+            messageBox.style.transition = "opacity 0.5s ease";       // transición suave
+
             document.body.appendChild(messageBox);
 
-            function showMessage(text, color = "yellow") {
-                messageBox.textContent = text;
+            function showMessage(html, color = "white") {
+                messageBox.innerHTML = html;
                 messageBox.style.color = color;
+                messageBox.style.display = "block";
+
+                // Pequeña pausa para que se aplique el display antes de animar
+                requestAnimationFrame(() => {
+                    messageBox.style.opacity = "1";
+                });
+
                 clearTimeout(showMessage.timeout);
-                showMessage.timeout = setTimeout(() => (messageBox.textContent = ""), 2000);
+                showMessage.timeout = setTimeout(() => {
+                    messageBox.style.opacity = "0";  // fade out
+                    // Después de la transición, ocultamos el recuadro
+                    setTimeout(() => {
+                        messageBox.style.display = "none";
+                    }, 500); // coincide con la duración del fade
+                }, 15000);
             }
 
-            // --- Zona de botones en columna ---
+            // --- Zona de botones en vertical ---
             const buttonArea = document.createElement("div");
             buttonArea.style.marginTop = "10px";
             buttonArea.style.display = "flex";
-            buttonArea.style.flexDirection = "column"; // vertical
+            buttonArea.style.flexDirection = "column";
             buttonArea.style.alignItems = "flex-start";
             buttonArea.style.gap = "8px";
             document.body.appendChild(buttonArea);
 
-            const resetButton = document.createElement("button");
-            resetButton.textContent = "Reiniciar progreso";
+            // --- Botones principales (pantalla de juego) ---
+            const inventoryButton = document.createElement("button");
+            inventoryButton.textContent = "Inventario";
+            inventoryButton.style.display = "none";
 
             const menuButton = document.createElement("button");
             menuButton.textContent = "Menú";
             menuButton.style.display = "none";
 
-            const inventoryButton = document.createElement("button");
-            inventoryButton.textContent = "Inventario";
-            inventoryButton.style.display = "none";
+            const rulesButton = document.createElement("button");
+            rulesButton.textContent = "Reglas";
+            rulesButton.style.display = "none";
 
-            buttonArea.append(resetButton, menuButton, inventoryButton);
+            buttonArea.append(inventoryButton, menuButton, rulesButton);
 
             // --- Tienda ---
             const shop = document.createElement("div");
             shop.style.marginTop = "15px";
             document.body.appendChild(shop);
 
-            // --- Panel de Inventario ---
+            // --- Inventario ---
             const inventoryPanel = document.createElement("div");
             inventoryPanel.style.position = "fixed";
             inventoryPanel.style.top = "50%";
@@ -122,105 +154,95 @@
             let hasWoodSword = false;
             let startTime;
             let timer;
-            let gameActive = false;
+            let gameActive = true; // ahora empieza activo
 
             // --- Guardar/cargar progreso ---
             function loadProgress() {
-                const savedScore = localStorage.getItem("score");
-                const savedSword = localStorage.getItem("woodSword");
-                if (savedScore) score = parseInt(savedScore);
-                if (savedSword === "true") hasWoodSword = true;
-                updateScore(0);
-                updateShop();
+            const savedScore = localStorage.getItem("score");
+            const savedSword = localStorage.getItem("woodSword");
+            if (savedScore) score = parseInt(savedScore);
+            if (savedSword === "true") hasWoodSword = true;
+            updateScore(0);
+            updateShop();
             }
 
             function saveProgress() {
-                localStorage.setItem("score", score);
-                localStorage.setItem("woodSword", hasWoodSword);
+            localStorage.setItem("score", score);
+            localStorage.setItem("woodSword", hasWoodSword);
             }
 
             // --- Mostrar cuadrado ---
             function showSquare() {
-                if (!gameActive) return;
+            if (!gameActive) return;
+            const x = Math.random() * (gameArea.clientWidth - 50);
+            const y = Math.random() * (gameArea.clientHeight - 50);
+            square.style.left = `${x}px`;
+            square.style.top = `${y}px`;
+            square.style.display = "block";
+            startTime = Date.now();
 
-                const x = Math.random() * (gameArea.clientWidth - 50);
-                const y = Math.random() * (gameArea.clientHeight - 50);
-                square.style.left = `${x}px`;
-                square.style.top = `${y}px`;
-                square.style.display = "block";
-                startTime = Date.now();
-
-                timer = setTimeout(() => {
-                    square.style.display = "none";
-                    showSquare();
-                    updateScore(0);
-                }, 1500);
+            timer = setTimeout(() => {
+                square.style.display = "none";
+                showSquare();
+                updateScore(0);
+            }, 1500);
             }
 
             // --- Actualizar puntuación ---
             function updateScore(points) {
-                score += points;
-                scoreDisplay.textContent = `Monedas: ${score}`;
-                saveProgress();
-                updateShop();
+            score += points;
+            scoreDisplay.textContent = `Monedas: ${score}`;
+            saveProgress();
+            updateShop();
             }
 
             // --- Tocar el cuadrado ---
             square.addEventListener("pointerdown", () => {
-                if (!gameActive) return;
-                const reaction = Date.now() - startTime;
-                clearTimeout(timer);
-                square.style.display = "none";
+            if (!gameActive) return;
+            const reaction = Date.now() - startTime;
+            clearTimeout(timer);
+            square.style.display = "none";
 
-                let points = 0;
-                if (reaction <= 600) points = 3;
-                else if (reaction <= 1000) points = 2;
-                else if (reaction <= 1500) points = 1;
+            let points = 0;
+            if (reaction <= 600) points = 3;
+            else if (reaction <= 1000) points = 2;
+            else if (reaction <= 1500) points = 1;
 
-                if (hasWoodSword) points += 1;
+            if (hasWoodSword) points += 1;
 
-                updateScore(points);
-                showMessage(`+${points} monedas`, hasWoodSword ? "cyan" : "lime");
-                showSquare();
+            updateScore(points);
+            showMessage(`+${points} monedas`, hasWoodSword ? "cyan" : "lime");
+            showSquare();
             });
 
             // --- Tienda ---
             function updateShop() {
-                shop.innerHTML = "";
-                const sword = document.createElement("div");
+            shop.innerHTML = "";
+            const sword = document.createElement("div");
 
-                if (!hasWoodSword) {
-                    sword.textContent = "Espada de madera - Precio: 20 monedas";
-                    const buyBtn = document.createElement("button");
-                    buyBtn.textContent = "Comprar";
-                    buyBtn.style.marginLeft = "10px";
+            if (!hasWoodSword) {
+                sword.textContent = "Espada de madera - Precio: 20 monedas";
+                const buyBtn = document.createElement("button");
+                buyBtn.textContent = "Comprar";
+                buyBtn.style.marginLeft = "10px";
 
-                    buyBtn.onclick = () => {
-                        if (score >= 20) {
-                            score -= 20;
-                            hasWoodSword = true;
-                            updateScore(0);
-                            showMessage("¡Has comprado la espada de madera!", "cyan");
-                        } else {
-                            showMessage("No tienes suficientes monedas.", "red");
-                        }
-                    };
-                    sword.appendChild(buyBtn);
+                buyBtn.onclick = () => {
+                if (score >= 20) {
+                    score -= 20;
+                    hasWoodSword = true;
+                    updateScore(0);
+                    showMessage("¡Has comprado la espada de madera!", "cyan");
                 } else {
-                    sword.textContent = "✅ Espada de madera (Activa: +1 moneda por toque)";
-                    sword.style.color = "cyan";
+                    showMessage("No tienes suficientes monedas.", "red");
                 }
-                shop.appendChild(sword);
+                };
+                sword.appendChild(buyBtn);
+            } else {
+                sword.textContent = "✅ Espada de madera (Activa: +1 moneda por toque)";
+                sword.style.color = "cyan";
             }
-
-            // --- Botón de reinicio ---
-            resetButton.addEventListener("click", () => {
-                score = 0;
-                hasWoodSword = false;
-                localStorage.clear();
-                updateScore(0);
-                showMessage("Progreso reiniciado", "orange");
-            });
+            shop.appendChild(sword);
+            }
 
             // --- Menú principal ---
             const menu = document.createElement("div");
@@ -230,7 +252,7 @@
             menu.style.width = "100%";
             menu.style.height = "100%";
             menu.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-            menu.style.display = "flex";
+            menu.style.display = "none";
             menu.style.flexDirection = "column";
             menu.style.justifyContent = "center";
             menu.style.alignItems = "center";
@@ -240,77 +262,95 @@
             document.body.appendChild(menu);
 
             const title = document.createElement("h1");
-            title.textContent = "🎮 Atrapa el Cuadrado";
+            title.textContent = "⏸️ Menú";
             menu.appendChild(title);
 
-            const startBtn = document.createElement("button");
-            startBtn.textContent = "Empezar juego";
-            menu.appendChild(startBtn);
+            const resetButton = document.createElement("button");
+            resetButton.textContent = "Reiniciar progreso";
+            menu.appendChild(resetButton);
 
-            const rulesBtn = document.createElement("button");
-            rulesBtn.textContent = "Reglas";
-            menu.appendChild(rulesBtn);
+            const backToGameBtn = document.createElement("button");
+            backToGameBtn.textContent = "Volver al juego";
+            menu.appendChild(backToGameBtn);
 
-            startBtn.onclick = () => {
-                menu.style.display = "none";
-                gameActive = true;
-                menuButton.style.display = "block";
-                inventoryButton.style.display = "block";
-                showSquare();
-                showMessage("¡Empieza el juego!", "lime");
+            // --- Acciones de los botones ---
+            resetButton.onclick = () => {
+            score = 0;
+            hasWoodSword = false;
+            localStorage.clear();
+            updateScore(0);
+            showMessage("Progreso reiniciado", "orange");
             };
 
-            rulesBtn.onclick = () => {
-                showMessage("Toca el cuadrado lo más rápido posible. Usa las monedas para comprar mejoras.", "white");
+            backToGameBtn.onclick = () => {
+            menu.style.display = "none";
+            gameActive = true;
+            showSquare();
             };
 
             menuButton.onclick = () => {
-                gameActive = false;
-                clearTimeout(timer);
-                square.style.display = "none";
-                menu.style.display = "flex";
-                menuButton.style.display = "none";
-                inventoryButton.style.display = "none";
-                inventoryPanel.style.display = "none";
-                showMessage("Juego pausado", "orange");
+            gameActive = false;
+            clearTimeout(timer);
+            square.style.display = "none";
+            menu.style.display = "flex";
             };
 
-            // --- Inventario visual ---
-            inventoryButton.onclick = toggleInventory;
+            rulesButton.onclick = () => {
+            showMessage(`
+                <strong>Reglas:</strong><br><br>
+                Tu objetivo es tocar el cuadrado rojo tan rápido como puedas cada vez que aparezca.<br><br>
+                <strong>Puntuación:</strong><br>
+                • Si lo tocas en menos de <strong>0.6 segundos</strong>, ganas <strong>+3 monedas</strong><br>
+                • Si lo tocas entre <strong>0.6 y 1 segundo</strong>, ganas <strong>+2 monedas</strong><br>
+                • Si lo tocas entre <strong>1 y 1.5 segundos</strong>, ganas <strong>+1 moneda</strong><br>
+                • Si no llegas a tiempo, ganas <strong>0 monedas</strong><br><br>
+                <strong>Consejos:</strong><br>
+                • Usa tus monedas para comprar objetos en la tienda.<br>
+                • Tu progreso se guarda automáticamente, así que no perderás tus monedas ni tus objetos al salir del juego.
+            `);
+            };
 
+            // --- Inventario ---
+            inventoryButton.onclick = toggleInventory;
             function toggleInventory() {
-                if (inventoryPanel.style.display === "block") {
-                    inventoryPanel.style.display = "none";
-                } else {
-                    updateInventory();
-                    inventoryPanel.style.display = "block";
-                }
+            if (inventoryPanel.style.display === "block") {
+                inventoryPanel.style.display = "none";
+            } else {
+                updateInventory();
+                inventoryPanel.style.display = "block";
+            }
             }
 
             function updateInventory() {
-                inventoryContent.innerHTML = "";
-                if (hasWoodSword) {
-                    const item = document.createElement("div");
-                    item.textContent = "Espada de madera (Activa: +1 moneda por toque)";
-                    inventoryContent.appendChild(item);
-                } else {
-                    inventoryContent.textContent = "Inventario vacío";
-                }
+            inventoryContent.innerHTML = "";
+            if (hasWoodSword) {
+                const item = document.createElement("div");
+                item.textContent = "Espada de madera (Activa: +1 moneda por toque)";
+                inventoryContent.appendChild(item);
+            } else {
+                inventoryContent.textContent = "Inventario vacío";
+            }
             }
 
             closeInventoryBtn.onclick = () => {
-                inventoryPanel.style.display = "none";
+            inventoryPanel.style.display = "none";
             };
 
             // --- Atajos de teclado ---
             document.addEventListener("keydown", (e) => {
-                const key = e.key.toLowerCase();
-                if (key === "i") toggleInventory();
-                if (key === "m" && gameActive) menuButton.click();
+            const key = e.key.toLowerCase();
+            if (key === "i") toggleInventory();
+            if (key === "m") menuButton.click();
             });
 
             // --- Iniciar ---
             loadProgress();
-        </script>
+            showSquare(); // empieza automáticamente
+
+            // Mostrar botones principales desde el principio
+            inventoryButton.style.display = "block";
+            menuButton.style.display = "block";
+            rulesButton.style.display = "block";
+            </script>
     </body>
 </html> 
