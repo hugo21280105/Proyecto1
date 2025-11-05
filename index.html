@@ -60,23 +60,69 @@
                 showMessage.timeout = setTimeout(() => (messageBox.textContent = ""), 2000);
             }
 
-            // --- Botón de reinicio ---
+            // --- Zona de botones en columna ---
+            const buttonArea = document.createElement("div");
+            buttonArea.style.marginTop = "10px";
+            buttonArea.style.display = "flex";
+            buttonArea.style.flexDirection = "column"; // vertical
+            buttonArea.style.alignItems = "flex-start";
+            buttonArea.style.gap = "8px";
+            document.body.appendChild(buttonArea);
+
             const resetButton = document.createElement("button");
             resetButton.textContent = "Reiniciar progreso";
-            resetButton.style.marginTop = "10px";
-            resetButton.style.display = "block";
-            document.body.appendChild(resetButton);
+
+            const menuButton = document.createElement("button");
+            menuButton.textContent = "Menú";
+            menuButton.style.display = "none";
+
+            const inventoryButton = document.createElement("button");
+            inventoryButton.textContent = "Inventario";
+            inventoryButton.style.display = "none";
+
+            buttonArea.append(resetButton, menuButton, inventoryButton);
 
             // --- Tienda ---
             const shop = document.createElement("div");
             shop.style.marginTop = "15px";
             document.body.appendChild(shop);
 
-            // --- Variables del juego ---
+            // --- Panel de Inventario ---
+            const inventoryPanel = document.createElement("div");
+            inventoryPanel.style.position = "fixed";
+            inventoryPanel.style.top = "50%";
+            inventoryPanel.style.left = "50%";
+            inventoryPanel.style.transform = "translate(-50%, -50%)";
+            inventoryPanel.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+            inventoryPanel.style.color = "white";
+            inventoryPanel.style.padding = "20px";
+            inventoryPanel.style.border = "2px solid white";
+            inventoryPanel.style.borderRadius = "10px";
+            inventoryPanel.style.display = "none";
+            inventoryPanel.style.textAlign = "center";
+            inventoryPanel.style.zIndex = "10";
+
+            const inventoryTitle = document.createElement("h2");
+            inventoryTitle.textContent = "🎒 Inventario";
+            inventoryPanel.appendChild(inventoryTitle);
+
+            const inventoryContent = document.createElement("div");
+            inventoryContent.style.marginTop = "10px";
+            inventoryPanel.appendChild(inventoryContent);
+
+            const closeInventoryBtn = document.createElement("button");
+            closeInventoryBtn.textContent = "Cerrar";
+            closeInventoryBtn.style.marginTop = "15px";
+            inventoryPanel.appendChild(closeInventoryBtn);
+
+            document.body.appendChild(inventoryPanel);
+
+            // --- Variables ---
             let score = 0;
             let hasWoodSword = false;
             let startTime;
             let timer;
+            let gameActive = false;
 
             // --- Guardar/cargar progreso ---
             function loadProgress() {
@@ -95,6 +141,8 @@
 
             // --- Mostrar cuadrado ---
             function showSquare() {
+                if (!gameActive) return;
+
                 const x = Math.random() * (gameArea.clientWidth - 50);
                 const y = Math.random() * (gameArea.clientHeight - 50);
                 square.style.left = `${x}px`;
@@ -119,6 +167,7 @@
 
             // --- Tocar el cuadrado ---
             square.addEventListener("pointerdown", () => {
+                if (!gameActive) return;
                 const reaction = Date.now() - startTime;
                 clearTimeout(timer);
                 square.style.display = "none";
@@ -128,10 +177,7 @@
                 else if (reaction <= 1000) points = 2;
                 else if (reaction <= 1500) points = 1;
 
-                // 💥 ESPADA: bonus por tenerla
-                if (hasWoodSword) {
-                    points += 1;
-                }
+                if (hasWoodSword) points += 1;
 
                 updateScore(points);
                 showMessage(`+${points} monedas`, hasWoodSword ? "cyan" : "lime");
@@ -144,7 +190,7 @@
                 const sword = document.createElement("div");
 
                 if (!hasWoodSword) {
-                    sword.textContent = "🪵 Espada de madera - Precio: 20 monedas";
+                    sword.textContent = "Espada de madera - Precio: 20 monedas";
                     const buyBtn = document.createElement("button");
                     buyBtn.textContent = "Comprar";
                     buyBtn.style.marginLeft = "10px";
@@ -176,11 +222,95 @@
                 showMessage("Progreso reiniciado", "orange");
             });
 
+            // --- Menú principal ---
+            const menu = document.createElement("div");
+            menu.style.position = "absolute";
+            menu.style.top = "0";
+            menu.style.left = "0";
+            menu.style.width = "100%";
+            menu.style.height = "100%";
+            menu.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+            menu.style.display = "flex";
+            menu.style.flexDirection = "column";
+            menu.style.justifyContent = "center";
+            menu.style.alignItems = "center";
+            menu.style.gap = "15px";
+            menu.style.color = "white";
+            menu.style.fontSize = "20px";
+            document.body.appendChild(menu);
+
+            const title = document.createElement("h1");
+            title.textContent = "🎮 Atrapa el Cuadrado";
+            menu.appendChild(title);
+
+            const startBtn = document.createElement("button");
+            startBtn.textContent = "Empezar juego";
+            menu.appendChild(startBtn);
+
+            const rulesBtn = document.createElement("button");
+            rulesBtn.textContent = "Reglas";
+            menu.appendChild(rulesBtn);
+
+            startBtn.onclick = () => {
+                menu.style.display = "none";
+                gameActive = true;
+                menuButton.style.display = "block";
+                inventoryButton.style.display = "block";
+                showSquare();
+                showMessage("¡Empieza el juego!", "lime");
+            };
+
+            rulesBtn.onclick = () => {
+                showMessage("Toca el cuadrado lo más rápido posible. Usa las monedas para comprar mejoras.", "white");
+            };
+
+            menuButton.onclick = () => {
+                gameActive = false;
+                clearTimeout(timer);
+                square.style.display = "none";
+                menu.style.display = "flex";
+                menuButton.style.display = "none";
+                inventoryButton.style.display = "none";
+                inventoryPanel.style.display = "none";
+                showMessage("Juego pausado", "orange");
+            };
+
+            // --- Inventario visual ---
+            inventoryButton.onclick = toggleInventory;
+
+            function toggleInventory() {
+                if (inventoryPanel.style.display === "block") {
+                    inventoryPanel.style.display = "none";
+                } else {
+                    updateInventory();
+                    inventoryPanel.style.display = "block";
+                }
+            }
+
+            function updateInventory() {
+                inventoryContent.innerHTML = "";
+                if (hasWoodSword) {
+                    const item = document.createElement("div");
+                    item.textContent = "Espada de madera (Activa: +1 moneda por toque)";
+                    inventoryContent.appendChild(item);
+                } else {
+                    inventoryContent.textContent = "Inventario vacío";
+                }
+            }
+
+            closeInventoryBtn.onclick = () => {
+                inventoryPanel.style.display = "none";
+            };
+
+            // --- Atajos de teclado ---
+            document.addEventListener("keydown", (e) => {
+                const key = e.key.toLowerCase();
+                if (key === "i") toggleInventory();
+                if (key === "m" && gameActive) menuButton.click();
+            });
+
             // --- Iniciar ---
             loadProgress();
-            showSquare();
         </script>
     </body>
-</html>   
-
-
+</html> 
