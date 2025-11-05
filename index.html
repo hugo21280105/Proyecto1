@@ -39,15 +39,61 @@
        <script>
             const square = document.getElementById("square");
             const gameArea = document.getElementById("gameArea");
+
+            // --- Zona de puntuación ---
             const scoreDisplay = document.createElement("div");
-            document.body.appendChild(scoreDisplay);
             scoreDisplay.style.fontSize = "24px";
             scoreDisplay.style.marginTop = "10px";
+            document.body.appendChild(scoreDisplay);
 
+            // --- Zona de mensajes ---
+            const messageBox = document.createElement("div");
+            messageBox.style.marginTop = "10px";
+            messageBox.style.color = "yellow";
+            messageBox.style.minHeight = "24px";
+            document.body.appendChild(messageBox);
+
+            function showMessage(text, color = "yellow") {
+                messageBox.textContent = text;
+                messageBox.style.color = color;
+                clearTimeout(showMessage.timeout);
+                showMessage.timeout = setTimeout(() => (messageBox.textContent = ""), 2000);
+            }
+
+            // --- Botón de reinicio ---
+            const resetButton = document.createElement("button");
+            resetButton.textContent = "Reiniciar progreso";
+            resetButton.style.marginTop = "10px";
+            resetButton.style.display = "block";
+            document.body.appendChild(resetButton);
+
+            // --- Tienda ---
+            const shop = document.createElement("div");
+            shop.style.marginTop = "15px";
+            document.body.appendChild(shop);
+
+            // --- Variables del juego ---
             let score = 0;
+            let hasWoodSword = false;
             let startTime;
             let timer;
 
+            // --- Guardar/cargar progreso ---
+            function loadProgress() {
+                const savedScore = localStorage.getItem("score");
+                const savedSword = localStorage.getItem("woodSword");
+                if (savedScore) score = parseInt(savedScore);
+                if (savedSword === "true") hasWoodSword = true;
+                updateScore(0);
+                updateShop();
+            }
+
+            function saveProgress() {
+                localStorage.setItem("score", score);
+                localStorage.setItem("woodSword", hasWoodSword);
+            }
+
+            // --- Mostrar cuadrado ---
             function showSquare() {
                 const x = Math.random() * (gameArea.clientWidth - 50);
                 const y = Math.random() * (gameArea.clientHeight - 50);
@@ -56,64 +102,22 @@
                 square.style.display = "block";
                 startTime = Date.now();
 
-                // El cuadrado desaparece si no lo tocas en 1,5 segundos
                 timer = setTimeout(() => {
-                square.style.display = "none";
-                showSquare(); // Aparece uno nuevo
-                updateScore(0); // No se tocó a tiempo
+                    square.style.display = "none";
+                    showSquare();
+                    updateScore(0);
                 }, 1500);
             }
 
-            // =========================
-            // SISTEMA DE MONEDAS
-            // =========================
+            // --- Actualizar puntuación ---
             function updateScore(points) {
                 score += points;
                 scoreDisplay.textContent = `Monedas: ${score}`;
-                updateShop(); // <- Comprobamos la tienda cada vez que cambian las monedas
+                saveProgress();
+                updateShop();
             }
 
-            // =========================
-            // TIENDA
-            // =========================
-            const shop = document.createElement("div");
-            document.body.appendChild(shop);
-            shop.style.marginTop = "15px";
-            shop.style.fontSize = "20px";
-            shop.innerHTML = `
-                <p><strong>Tienda:</strong></p>
-                <button id="buySword">Comprar espada de madera (20 monedas)</button>
-                <p id="ownedItems"></p>
-            `;
-
-            const buySwordBtn = document.getElementById("buySword");
-            const ownedItems = document.getElementById("ownedItems");
-            let hasSword = false;
-
-            // Actualiza si se puede comprar
-            function updateShop() {
-                if (score >= 20 && !hasSword) {
-                buySwordBtn.disabled = false;
-                } else {
-                buySwordBtn.disabled = true;
-                }
-            }
-
-            // Lógica de compra
-            buySwordBtn.addEventListener("click", () => {
-                if (score >= 20 && !hasSword) {
-                score -= 20;
-                hasSword = true;
-                ownedItems.textContent = "Has comprado: 🪵 Espada de madera";
-                buySwordBtn.textContent = "Espada de madera — Comprada ✅";
-                buySwordBtn.disabled = true;
-                scoreDisplay.textContent = `Monedas: ${score}`;
-                }
-            });
-
-            // =========================
-            // INTERACCIÓN CON EL CUADRADO
-            // =========================
+            // --- Tocar el cuadrado ---
             square.addEventListener("pointerdown", () => {
                 const reaction = Date.now() - startTime;
                 clearTimeout(timer);
@@ -124,14 +128,59 @@
                 else if (reaction <= 1000) points = 2;
                 else if (reaction <= 1500) points = 1;
 
+                // 💥 ESPADA: bonus por tenerla
+                if (hasWoodSword) {
+                    points += 1;
+                }
+
                 updateScore(points);
+                showMessage(`+${points} monedas`, hasWoodSword ? "cyan" : "lime");
                 showSquare();
             });
 
+            // --- Tienda ---
+            function updateShop() {
+                shop.innerHTML = "";
+                const sword = document.createElement("div");
+
+                if (!hasWoodSword) {
+                    sword.textContent = "🪵 Espada de madera - Precio: 20 monedas";
+                    const buyBtn = document.createElement("button");
+                    buyBtn.textContent = "Comprar";
+                    buyBtn.style.marginLeft = "10px";
+
+                    buyBtn.onclick = () => {
+                        if (score >= 20) {
+                            score -= 20;
+                            hasWoodSword = true;
+                            updateScore(0);
+                            showMessage("¡Has comprado la espada de madera!", "cyan");
+                        } else {
+                            showMessage("No tienes suficientes monedas.", "red");
+                        }
+                    };
+                    sword.appendChild(buyBtn);
+                } else {
+                    sword.textContent = "✅ Espada de madera (Activa: +1 moneda por toque)";
+                    sword.style.color = "cyan";
+                }
+                shop.appendChild(sword);
+            }
+
+            // --- Botón de reinicio ---
+            resetButton.addEventListener("click", () => {
+                score = 0;
+                hasWoodSword = false;
+                localStorage.clear();
+                updateScore(0);
+                showMessage("Progreso reiniciado", "orange");
+            });
+
+            // --- Iniciar ---
+            loadProgress();
             showSquare();
         </script>
     </body>
-</html>
-        
+</html>   
 
 
