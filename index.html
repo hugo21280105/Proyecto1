@@ -32,45 +32,106 @@
     </head>
     <body>
         <h1>Atrapa el cuadrado</h1>
-        <p>Haz click en el cuadrado rojo para ganar puntos<br/><br/>
-        Te amo miamooor</p>
+        <p>Haz click en el cuadrado rojo para ganar puntos</p>
         <div id="gameArea">
             <div id="square"></div>
         </div>
-        <p>Puntuación: <span id="score">0</span></p> 
-        <script>
-            const square = document.getElementById('square');
-            const gameArea = document.getElementById('gameArea');
-            const scoreDisplay = document.getElementById('score');
-            let score = 0;
+       <script>
+            const square = document.getElementById("square");
+            const gameArea = document.getElementById("gameArea");
+            const scoreDisplay = document.createElement("div");
+            document.body.appendChild(scoreDisplay);
+            scoreDisplay.style.fontSize = "24px";
+            scoreDisplay.style.marginTop = "10px";
 
-            function randomPosition() {
-            const x = Math.random() * (gameArea.clientWidth - 50);
-            const y = Math.random() * (gameArea.clientHeight - 50);
-            square.style.left = x + 'px';
-            square.style.top = y + 'px';
-            }
+            let score = 0;
+            let startTime;
+            let timer;
 
             function showSquare() {
-            square.style.display = 'block';
-            randomPosition();
+                const x = Math.random() * (gameArea.clientWidth - 50);
+                const y = Math.random() * (gameArea.clientHeight - 50);
+                square.style.left = `${x}px`;
+                square.style.top = `${y}px`;
+                square.style.display = "block";
+                startTime = Date.now();
 
-            setTimeout(() => {
-                square.style.display = 'none';
-                showSquare(); // vuelve a aparecer en otro sitio
-            }, 1000);
+                // El cuadrado desaparece si no lo tocas en 1,5 segundos
+                timer = setTimeout(() => {
+                square.style.display = "none";
+                showSquare(); // Aparece uno nuevo
+                updateScore(0); // No se tocó a tiempo
+                }, 1500);
             }
 
-            square.addEventListener('click', () => {
-            score++;
-            scoreDisplay.textContent = score;
-            square.style.display = 'none';
+            // =========================
+            // SISTEMA DE MONEDAS
+            // =========================
+            function updateScore(points) {
+                score += points;
+                scoreDisplay.textContent = `Monedas: ${score}`;
+                updateShop(); // <- Comprobamos la tienda cada vez que cambian las monedas
+            }
+
+            // =========================
+            // TIENDA
+            // =========================
+            const shop = document.createElement("div");
+            document.body.appendChild(shop);
+            shop.style.marginTop = "15px";
+            shop.style.fontSize = "20px";
+            shop.innerHTML = `
+                <p><strong>Tienda:</strong></p>
+                <button id="buySword">Comprar espada de madera (20 monedas)</button>
+                <p id="ownedItems"></p>
+            `;
+
+            const buySwordBtn = document.getElementById("buySword");
+            const ownedItems = document.getElementById("ownedItems");
+            let hasSword = false;
+
+            // Actualiza si se puede comprar
+            function updateShop() {
+                if (score >= 20 && !hasSword) {
+                buySwordBtn.disabled = false;
+                } else {
+                buySwordBtn.disabled = true;
+                }
+            }
+
+            // Lógica de compra
+            buySwordBtn.addEventListener("click", () => {
+                if (score >= 20 && !hasSword) {
+                score -= 20;
+                hasSword = true;
+                ownedItems.textContent = "Has comprado: 🪵 Espada de madera";
+                buySwordBtn.textContent = "Espada de madera — Comprada ✅";
+                buySwordBtn.disabled = true;
+                scoreDisplay.textContent = `Monedas: ${score}`;
+                }
+            });
+
+            // =========================
+            // INTERACCIÓN CON EL CUADRADO
+            // =========================
+            square.addEventListener("pointerdown", () => {
+                const reaction = Date.now() - startTime;
+                clearTimeout(timer);
+                square.style.display = "none";
+
+                let points = 0;
+                if (reaction <= 600) points = 3;
+                else if (reaction <= 1000) points = 2;
+                else if (reaction <= 1500) points = 1;
+
+                updateScore(points);
+                showSquare();
             });
 
             showSquare();
-        </script>           
+        </script>
     </body>
 </html>
-
         
+
 
