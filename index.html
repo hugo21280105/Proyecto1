@@ -1,367 +1,370 @@
 <!DOCTYPE html>
 <html lang="es">
-  <meta charset="UTF-8" />
-  <head>
-    <title>Juego de atrapar</title>
-    <style>
-      body {
-        text-align: center;
-        background-color: #222;
-        color: white;
-        font-family: sans-serif;
-      }
+<meta charset="UTF-8">
+<head>
+  <title>Juego de atrapar</title>
+  <style>
+    body {
+      text-align: center;
+      background-color: #222;
+      color: white;
+      font-family: sans-serif;
+    }
 
-      #gameArea {
-        position: relative;
-        width: 500px;
-        height: 400px;
-        background-color: #333;
-        margin: 20px auto;
-        border: 2px solid white;
-      }
+    #gameArea {
+      position: relative;
+      width: 500px;
+      height: 400px;
+      background-color: #333;
+      margin: 20px auto;
+      border: 2px solid white;
+    }
 
-      #square {
-        position: absolute;
-        width: 50px;
-        height: 50px;
-        background-color: red;
-        display: none;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <h1>Atrapa el cuadrado</h1>
-    <p>Haz click en el cuadrado rojo para ganar monedas</p>
-    <div id="gameArea">
-      <div id="square"></div>
-    </div>
-    <script>
-      const square = document.getElementById("square");
-      const gameArea = document.getElementById("gameArea");
+    #square {
+      position: absolute;
+      width: 50px;
+      height: 50px;
+      background-color: red;
+      display: none;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Atrapa el cuadrado</h1>
+  <p>Haz click en el cuadrado rojo para ganar monedas</p>
+  <div id="gameArea">
+    <div id="square"></div>
+  </div>
 
-      // --- Zona de puntuación ---
-      const scoreDisplay = document.createElement("div");
-      scoreDisplay.style.fontSize = "24px";
-      scoreDisplay.style.marginTop = "10px";
-      document.body.appendChild(scoreDisplay);
+  <script>
+    const square = document.getElementById("square");
+    const gameArea = document.getElementById("gameArea");
 
-      // --- NUEVO: Zona de récord ---
-      const highScoreDisplay = document.createElement("div");
-      highScoreDisplay.style.fontSize = "20px";
-      highScoreDisplay.style.color = "gold";
-      highScoreDisplay.style.marginTop = "5px";
-      document.body.appendChild(highScoreDisplay);
+    // --- Zona de puntuación ---
+    const scoreDisplay = document.createElement("div");
+    scoreDisplay.style.fontSize = "24px";
+    scoreDisplay.style.marginTop = "10px";
+    document.body.appendChild(scoreDisplay);
 
-      // --- Zona de mensajes ---
-      const messageBox = document.createElement("div");
-      messageBox.style.marginTop = "20px";
-      messageBox.style.color = "white";
-      messageBox.style.minHeight = "24px";
-      messageBox.style.maxWidth = "520px";
-      messageBox.style.margin = "20px auto 0";
-      messageBox.style.textAlign = "left";
-      messageBox.style.whiteSpace = "normal";
-      messageBox.style.lineHeight = "1.4";
-      messageBox.style.fontSize = "16px";
-      messageBox.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
-      messageBox.style.border = "2px solid black";
-      messageBox.style.borderRadius = "10px";
-      messageBox.style.padding = "12px 16px";
-      messageBox.style.boxShadow = "0 0 10px rgba(255, 255, 0, 0.3)";
-      messageBox.style.display = "none";
-      messageBox.style.opacity = "0";
-      messageBox.style.transition = "opacity 0.5s ease";
-      document.body.appendChild(messageBox);
+    // --- NUEVO: Zona de récord ---
+    const recordDisplay = document.createElement("div");
+    recordDisplay.style.fontSize = "20px";
+    recordDisplay.style.marginTop = "5px";
+    recordDisplay.style.color = "gold";
+    document.body.appendChild(recordDisplay);
 
-      function showMessage(html, color = "white") {
-        messageBox.innerHTML = html;
-        messageBox.style.color = color;
-        messageBox.style.display = "block";
-        requestAnimationFrame(() => {
-          messageBox.style.opacity = "1";
-        });
-        clearTimeout(showMessage.timeout);
-        showMessage.timeout = setTimeout(() => {
-          messageBox.style.opacity = "0";
-          setTimeout(() => {
-            messageBox.style.display = "none";
-          }, 500);
-        }, 15000);
-      }
+    // --- Zona de mensajes ---
+    const messageBox = document.createElement("div");
+    messageBox.style.marginTop = "20px";
+    messageBox.style.color = "white";
+    messageBox.style.minHeight = "24px";
+    messageBox.style.maxWidth = "520px";
+    messageBox.style.margin = "20px auto 0";
+    messageBox.style.textAlign = "left";
+    messageBox.style.whiteSpace = "normal";
+    messageBox.style.lineHeight = "1.4";
+    messageBox.style.fontSize = "16px";
+    messageBox.style.backgroundColor = "rgba(0, 0, 0, 0.6)";
+    messageBox.style.border = "2px solid black";
+    messageBox.style.borderRadius = "10px";
+    messageBox.style.padding = "12px 16px";
+    messageBox.style.boxShadow = "0 0 10px rgba(255, 255, 0, 0.3)";
+    messageBox.style.display = "none";
+    messageBox.style.opacity = "0";
+    messageBox.style.transition = "opacity 0.5s ease";
+    document.body.appendChild(messageBox);
 
-      // --- Zona de botones ---
-      const buttonArea = document.createElement("div");
-      buttonArea.style.marginTop = "10px";
-      buttonArea.style.display = "flex";
-      buttonArea.style.flexDirection = "column";
-      buttonArea.style.alignItems = "flex-start";
-      buttonArea.style.gap = "8px";
-      document.body.appendChild(buttonArea);
+    function showMessage(html, color = "white") {
+      messageBox.innerHTML = html;
+      messageBox.style.color = color;
+      messageBox.style.display = "block";
+      requestAnimationFrame(() => { messageBox.style.opacity = "1"; });
 
-      const inventoryButton = document.createElement("button");
-      inventoryButton.textContent = "Inventario";
-      inventoryButton.style.display = "none";
+      clearTimeout(showMessage.timeout);
+      showMessage.timeout = setTimeout(() => {
+        messageBox.style.opacity = "0";
+        setTimeout(() => { messageBox.style.display = "none"; }, 500);
+      }, 3000);
+    }
 
-      const menuButton = document.createElement("button");
-      menuButton.textContent = "Menú";
-      menuButton.style.display = "none";
+    // --- Zona de botones ---
+    const buttonArea = document.createElement("div");
+    buttonArea.style.marginTop = "10px";
+    buttonArea.style.display = "flex";
+    buttonArea.style.flexDirection = "column";
+    buttonArea.style.alignItems = "flex-start";
+    buttonArea.style.gap = "8px";
+    document.body.appendChild(buttonArea);
 
-      const rulesButton = document.createElement("button");
-      rulesButton.textContent = "Reglas";
-      rulesButton.style.display = "none";
+    const inventoryButton = document.createElement("button");
+    inventoryButton.textContent = "Inventario";
+    inventoryButton.style.display = "none";
 
-      buttonArea.append(inventoryButton, menuButton, rulesButton);
+    const menuButton = document.createElement("button");
+    menuButton.textContent = "Menú";
+    menuButton.style.display = "none";
 
-      const shop = document.createElement("div");
-      shop.style.marginTop = "15px";
-      document.body.appendChild(shop);
+    const rulesButton = document.createElement("button");
+    rulesButton.textContent = "Reglas";
+    rulesButton.style.display = "none";
 
-      // --- Inventario ---
-      const inventoryPanel = document.createElement("div");
-      inventoryPanel.style.position = "fixed";
-      inventoryPanel.style.top = "50%";
-      inventoryPanel.style.left = "50%";
-      inventoryPanel.style.transform = "translate(-50%, -50%)";
-      inventoryPanel.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-      inventoryPanel.style.color = "white";
-      inventoryPanel.style.padding = "20px";
-      inventoryPanel.style.border = "2px solid white";
-      inventoryPanel.style.borderRadius = "10px";
-      inventoryPanel.style.display = "none";
-      inventoryPanel.style.textAlign = "center";
-      inventoryPanel.style.zIndex = "10";
+    buttonArea.append(inventoryButton, menuButton, rulesButton);
 
-      const inventoryTitle = document.createElement("h2");
-      inventoryTitle.textContent = "🎒 Inventario";
-      inventoryPanel.appendChild(inventoryTitle);
+    // --- Tienda ---
+    const shop = document.createElement("div");
+    shop.style.marginTop = "15px";
+    document.body.appendChild(shop);
 
-      const inventoryContent = document.createElement("div");
-      inventoryContent.style.marginTop = "10px";
-      inventoryPanel.appendChild(inventoryContent);
+    // --- Inventario ---
+    const inventoryPanel = document.createElement("div");
+    inventoryPanel.style.position = "fixed";
+    inventoryPanel.style.top = "50%";
+    inventoryPanel.style.left = "50%";
+    inventoryPanel.style.transform = "translate(-50%, -50%)";
+    inventoryPanel.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+    inventoryPanel.style.color = "white";
+    inventoryPanel.style.padding = "20px";
+    inventoryPanel.style.border = "2px solid white";
+    inventoryPanel.style.borderRadius = "10px";
+    inventoryPanel.style.display = "none";
+    inventoryPanel.style.textAlign = "center";
+    inventoryPanel.style.zIndex = "10";
 
-      const closeInventoryBtn = document.createElement("button");
-      closeInventoryBtn.textContent = "Cerrar";
-      closeInventoryBtn.style.marginTop = "15px";
-      inventoryPanel.appendChild(closeInventoryBtn);
+    const inventoryTitle = document.createElement("h2");
+    inventoryTitle.textContent = "🎒 Inventario";
+    inventoryPanel.appendChild(inventoryTitle);
 
-      document.body.appendChild(inventoryPanel);
+    const inventoryContent = document.createElement("div");
+    inventoryContent.style.marginTop = "10px";
+    inventoryPanel.appendChild(inventoryContent);
 
-      // --- Variables ---
-      let score = 0;
-      let hasWoodSword = false;
-      let highScore = 0; // --- NUEVO ---
-      let startTime;
-      let timer;
-      let gameActive = true;
+    const closeInventoryBtn = document.createElement("button");
+    closeInventoryBtn.textContent = "Cerrar";
+    closeInventoryBtn.style.marginTop = "15px";
+    inventoryPanel.appendChild(closeInventoryBtn);
+    document.body.appendChild(inventoryPanel);
 
-      // --- Guardar/cargar progreso ---
-      function loadProgress() {
-        const savedScore = localStorage.getItem("score");
-        const savedSword = localStorage.getItem("woodSword");
-        const savedHigh = localStorage.getItem("highScore"); // --- NUEVO ---
+    // --- Variables ---
+    let score = 0;
+    let record = 0; // nuevo
+    let hasWoodSword = false;
+    let startTime;
+    let timer;
+    let gameActive = true;
 
-        if (savedScore) score = parseInt(savedScore);
-        if (savedSword === "true") hasWoodSword = true;
-        if (savedHigh) highScore = parseInt(savedHigh); // --- NUEVO ---
+    // --- Guardar/cargar progreso ---
+    function loadProgress() {
+      const savedScore = localStorage.getItem("score");
+      const savedSword = localStorage.getItem("woodSword");
+      const savedRecord = localStorage.getItem("record");
 
-        updateScore(0);
-        updateShop();
-      }
+      if (savedScore) score = parseInt(savedScore);
+      if (savedSword === "true") hasWoodSword = true;
+      if (savedRecord) record = parseInt(savedRecord);
 
-      function saveProgress() {
-        localStorage.setItem("score", score);
-        localStorage.setItem("woodSword", hasWoodSword);
-        localStorage.setItem("highScore", highScore); // --- NUEVO ---
-      }
+      updateScore(0);
+      updateRecordDisplay();
+      updateShop();
+    }
 
-      // --- Mostrar cuadrado ---
-      function showSquare() {
-        if (!gameActive) return;
-        const x = Math.random() * (gameArea.clientWidth - 50);
-        const y = Math.random() * (gameArea.clientHeight - 50);
-        square.style.left = `${x}px`;
-        square.style.top = `${y}px`;
-        square.style.display = "block";
-        startTime = Date.now();
+    function saveProgress() {
+      localStorage.setItem("score", score);
+      localStorage.setItem("woodSword", hasWoodSword);
+      localStorage.setItem("record", record);
+    }
 
-        timer = setTimeout(() => {
-          square.style.display = "none";
-          showSquare();
-          updateScore(0);
-        }, 1500);
-      }
+    // --- Mostrar cuadrado ---
+    function showSquare() {
+      if (!gameActive) return;
+      const x = Math.random() * (gameArea.clientWidth - 50);
+      const y = Math.random() * (gameArea.clientHeight - 50);
+      square.style.left = `${x}px`;
+      square.style.top = `${y}px`;
+      square.style.display = "block";
+      startTime = Date.now();
 
-      // --- Actualizar puntuación ---
-      function updateScore(points) {
-        score += points;
-        scoreDisplay.textContent = `Monedas: ${score}`;
-
-        // --- NUEVO: actualizar récord ---
-        if (score > highScore) {
-          highScore = score;
-          showMessage("🏆 ¡Nuevo récord!", "gold");
-        }
-
-        highScoreDisplay.textContent = `🏆 Récord: ${highScore}`;
-        saveProgress();
-        updateShop();
-      }
-
-      // --- Tocar el cuadrado ---
-      square.addEventListener("pointerdown", () => {
-        if (!gameActive) return;
-        const reaction = Date.now() - startTime;
-        clearTimeout(timer);
+      timer = setTimeout(() => {
         square.style.display = "none";
-
-        let points = 0;
-        if (reaction <= 600) points = 3;
-        else if (reaction <= 1000) points = 2;
-        else if (reaction <= 1500) points = 1;
-
-        if (hasWoodSword) points += 1;
-
-        updateScore(points);
-        showMessage(`+${points} monedas`, hasWoodSword ? "cyan" : "lime");
         showSquare();
-      });
+      }, 1500);
+    }
 
-      // --- Tienda ---
-      function updateShop() {
-        shop.innerHTML = "";
-        const sword = document.createElement("div");
+    // --- Actualizar puntuación ---
+    function updateScore(points) {
+      score += points;
+      scoreDisplay.textContent = `Monedas: ${score}`;
 
-        if (!hasWoodSword) {
-          sword.textContent = "Espada de madera - Precio: 20 monedas";
-          const buyBtn = document.createElement("button");
-          buyBtn.textContent = "Comprar";
-          buyBtn.style.marginLeft = "10px";
-
-          buyBtn.onclick = () => {
-            if (score >= 20) {
-              score -= 20;
-              hasWoodSword = true;
-              updateScore(0);
-              showMessage("¡Has comprado la espada de madera!", "cyan");
-            } else {
-              showMessage("No tienes suficientes monedas.", "red");
-            }
-          };
-          sword.appendChild(buyBtn);
-        } else {
-          sword.textContent =
-            "✅ Espada de madera (Activa: +1 moneda por toque)";
-          sword.style.color = "cyan";
-        }
-        shop.appendChild(sword);
+      // Verificar récord solo si hay aumento real
+      if (score > record) {
+        record = score;
+        updateRecordDisplay();
+        showMessage("🏆 ¡Nuevo récord!", "gold");
       }
 
-      // --- Menú ---
-      const menu = document.createElement("div");
-      menu.style.position = "absolute";
-      menu.style.top = "0";
-      menu.style.left = "0";
-      menu.style.width = "100%";
-      menu.style.height = "100%";
-      menu.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
-      menu.style.display = "none";
-      menu.style.flexDirection = "column";
-      menu.style.justifyContent = "center";
-      menu.style.alignItems = "center";
-      menu.style.gap = "15px";
-      menu.style.color = "white";
-      menu.style.fontSize = "20px";
-      document.body.appendChild(menu);
+      saveProgress();
+      updateShop();
+    }
 
-      const title = document.createElement("h1");
-      title.textContent = "⏸️ Menú";
-      menu.appendChild(title);
+    function updateRecordDisplay() {
+      recordDisplay.textContent = `Récord: ${record} monedas`;
+    }
 
-      const resetButton = document.createElement("button");
-      resetButton.textContent = "Reiniciar progreso";
-      menu.appendChild(resetButton);
+    // --- Tocar el cuadrado ---
+    square.addEventListener("pointerdown", () => {
+      if (!gameActive) return;
+      const reaction = Date.now() - startTime;
+      clearTimeout(timer);
+      square.style.display = "none";
 
-      const backToGameBtn = document.createElement("button");
-      backToGameBtn.textContent = "Volver al juego";
-      menu.appendChild(backToGameBtn);
+      let points = 0;
+      if (reaction <= 600) points = 3;
+      else if (reaction <= 1000) points = 2;
+      else if (reaction <= 1500) points = 1;
 
-      resetButton.onclick = () => {
-        score = 0;
-        hasWoodSword = false;
-        highScore = 0; // --- NUEVO ---
-        localStorage.clear();
-        updateScore(0);
-        showMessage("Progreso reiniciado", "orange");
-      };
+      if (hasWoodSword) points += 1;
 
-      backToGameBtn.onclick = () => {
-        menu.style.display = "none";
-        gameActive = true;
-        showSquare();
-      };
-
-      menuButton.onclick = () => {
-        gameActive = false;
-        clearTimeout(timer);
-        square.style.display = "none";
-        menu.style.display = "flex";
-      };
-
-      rulesButton.onclick = () => {
-        showMessage(`
-            <strong>Reglas:</strong><br><br>
-            Tu objetivo es tocar el cuadrado rojo tan rápido como puedas cada vez que aparezca.<br><br>
-            <strong>Puntuación:</strong><br>
-            • Si lo tocas en menos de <strong>0.6 segundos</strong>, ganas <strong>+3 monedas</strong><br>
-            • Si lo tocas entre <strong>0.6 y 1 segundo</strong>, ganas <strong>+2 monedas</strong><br>
-            • Si lo tocas entre <strong>1 y 1.5 segundos</strong>, ganas <strong>+1 moneda</strong><br>
-            • Si no llegas a tiempo, ganas <strong>0 monedas</strong><br><br>
-            <strong>Consejos:</strong><br>
-            • Usa tus monedas para comprar objetos en la tienda.<br>
-            • Tu progreso y tu récord se guardan automáticamente, así que no los perderás al salir del juego.
-        `);
-      };
-
-      // --- Inventario ---
-      inventoryButton.onclick = toggleInventory;
-      function toggleInventory() {
-        if (inventoryPanel.style.display === "block") {
-          inventoryPanel.style.display = "none";
-        } else {
-          updateInventory();
-          inventoryPanel.style.display = "block";
-        }
-      }
-
-      function updateInventory() {
-        inventoryContent.innerHTML = "";
-        if (hasWoodSword) {
-          const item = document.createElement("div");
-          item.textContent = "Espada de madera (Activa: +1 moneda por toque)";
-          inventoryContent.appendChild(item);
-        } else {
-          inventoryContent.textContent = "Inventario vacío";
-        }
-      }
-
-      closeInventoryBtn.onclick = () => {
-        inventoryPanel.style.display = "none";
-      };
-
-      document.addEventListener("keydown", (e) => {
-        const key = e.key.toLowerCase();
-        if (key === "i") toggleInventory();
-        if (key === "m") menuButton.click();
-      });
-
-      // --- Iniciar ---
-      loadProgress();
+      updateScore(points);
+      showMessage(`+${points} monedas`, hasWoodSword ? "cyan" : "lime");
       showSquare();
+    });
 
-      inventoryButton.style.display = "block";
-      menuButton.style.display = "block";
-      rulesButton.style.display = "block";
-    </script>
-  </body>
+    // --- Tienda ---
+    function updateShop() {
+      shop.innerHTML = "";
+      const sword = document.createElement("div");
+
+      if (!hasWoodSword) {
+        sword.textContent = "Espada de madera - Precio: 20 monedas";
+        const buyBtn = document.createElement("button");
+        buyBtn.textContent = "Comprar";
+        buyBtn.style.marginLeft = "10px";
+
+        buyBtn.onclick = () => {
+          if (score >= 20) {
+            score -= 20;
+            hasWoodSword = true;
+            updateScore(0);
+            showMessage("¡Has comprado la espada de madera!", "cyan");
+          } else {
+            showMessage("No tienes suficientes monedas.", "red");
+          }
+        };
+        sword.appendChild(buyBtn);
+      } else {
+        sword.textContent = "✅ Espada de madera (Activa: +1 moneda por toque)";
+        sword.style.color = "cyan";
+      }
+      shop.appendChild(sword);
+    }
+
+    // --- Menú principal ---
+    const menu = document.createElement("div");
+    menu.style.position = "absolute";
+    menu.style.top = "0";
+    menu.style.left = "0";
+    menu.style.width = "100%";
+    menu.style.height = "100%";
+    menu.style.backgroundColor = "rgba(0, 0, 0, 0.9)";
+    menu.style.display = "none";
+    menu.style.flexDirection = "column";
+    menu.style.justifyContent = "center";
+    menu.style.alignItems = "center";
+    menu.style.gap = "15px";
+    menu.style.color = "white";
+    menu.style.fontSize = "20px";
+    document.body.appendChild(menu);
+
+    const title = document.createElement("h1");
+    title.textContent = "⏸️ Menú";
+    menu.appendChild(title);
+
+    const resetButton = document.createElement("button");
+    resetButton.textContent = "Reiniciar progreso";
+    menu.appendChild(resetButton);
+
+    const backToGameBtn = document.createElement("button");
+    backToGameBtn.textContent = "Volver al juego";
+    menu.appendChild(backToGameBtn);
+
+    resetButton.onclick = () => {
+      score = 0;
+      hasWoodSword = false;
+      // ⚠️ Mantenemos el récord
+      localStorage.removeItem("score");
+      localStorage.removeItem("woodSword");
+      updateScore(0);
+      showMessage("Progreso reiniciado (el récord se mantiene)", "orange");
+      updateRecordDisplay();
+    };
+
+    backToGameBtn.onclick = () => {
+      menu.style.display = "none";
+      gameActive = true;
+      showSquare();
+    };
+
+    menuButton.onclick = () => {
+      gameActive = false;
+      clearTimeout(timer);
+      square.style.display = "none";
+      menu.style.display = "flex";
+    };
+
+    rulesButton.onclick = () => {
+      showMessage(`
+        <strong>Reglas:</strong><br><br>
+        Tu objetivo es tocar el cuadrado rojo tan rápido como puedas.<br><br>
+        <strong>Puntuación:</strong><br>
+        • < 0.6s → +3 monedas<br>
+        • 0.6–1s → +2 monedas<br>
+        • 1–1.5s → +1 moneda<br>
+        • > 1.5s → 0 monedas<br><br>
+        • Usa tus monedas para comprar objetos en la tienda.<br>
+        • Tu progreso se guarda automáticamente.<br>
+        • El récord se guarda incluso al reiniciar.
+      `);
+    };
+
+    // --- Inventario ---
+    inventoryButton.onclick = toggleInventory;
+    function toggleInventory() {
+      if (inventoryPanel.style.display === "block") {
+        inventoryPanel.style.display = "none";
+      } else {
+        updateInventory();
+        inventoryPanel.style.display = "block";
+      }
+    }
+
+    function updateInventory() {
+      inventoryContent.innerHTML = "";
+      if (hasWoodSword) {
+        const item = document.createElement("div");
+        item.textContent = "Espada de madera (Activa: +1 moneda por toque)";
+        inventoryContent.appendChild(item);
+      } else {
+        inventoryContent.textContent = "Inventario vacío";
+      }
+    }
+
+    closeInventoryBtn.onclick = () => {
+      inventoryPanel.style.display = "none";
+    };
+
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+      if (key === "i") toggleInventory();
+      if (key === "m") menuButton.click();
+    });
+
+    // --- Iniciar ---
+    loadProgress();
+    showSquare();
+
+    inventoryButton.style.display = "block";
+    menuButton.style.display = "block";
+    rulesButton.style.display = "block";
+  </script>
+</body>
 </html>
